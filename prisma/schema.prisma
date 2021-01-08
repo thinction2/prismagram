@@ -1,0 +1,81 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           String    @id @default(cuid())
+  username     String    @unique
+  email        String    @unique
+  firstName    String    @default("")
+  lastName     String
+  bio          String
+  following    User[]    @relation("FollowUser", references: [id])
+  follower     User[]    @relation("FollowUser", references: [id])
+  posts        Post[]
+  likes        Like[]
+  comments     Comment[]
+  rooms        Room[]
+  loginSecret  String
+  fromMessages Message[] @relation("FromMessages")
+  toMessages   Message[] @relation("ToMessages")
+}
+
+model Post {
+  id       String    @id @default(cuid())
+  location String
+  caption  String
+  user     User      @relation(fields: [userId], references: [id])
+  files    File[]
+  likes    Like[]
+  comments Comment[]
+  userId   String
+}
+
+model Like {
+  id     String @id @default(cuid())
+  user   User   @relation(fields: [userId], references: [id])
+  post   Post   @relation(fields: [postId], references: [id])
+  userId String
+  postId String
+}
+
+model Comment {
+  id     String @id @default(cuid())
+  text   String
+  user   User   @relation(fields: [userId], references: [id])
+  post   Post   @relation(fields: [postId], references: [id])
+  userId String
+  postId String
+}
+
+model File {
+  id     String @id @default(cuid())
+  url    String
+  post   Post   @relation(fields: [postId], references: [id])
+  postId String
+}
+
+model Room {
+  id           String    @id @default(cuid())
+  participants User[]
+  message      Message[]
+}
+
+model Message {
+  id     String @id @default(cuid())
+  text   String
+  from   User   @relation("FromMessages", fields: [fromId], references: [id])
+  fromId String
+  to     User   @relation("ToMessages", fields: [toId], references: [id])
+  toId   String
+  room   Room   @relation(fields: [roomId], references: [id])
+  roomId String
+}
